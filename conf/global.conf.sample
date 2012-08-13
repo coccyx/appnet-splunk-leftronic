@@ -1,0 +1,9 @@
+[splunk]
+splunk_user = admin
+splunk_password = changeme
+splunk_host = localhost
+splunk_scheme = https
+splunk_port = 8089
+
+[leftronic]
+leftronic_access_key = 

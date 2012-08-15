@@ -113,9 +113,9 @@ def unique_users(service):
 
 def posts_by_hour(service):
     def iterate(ignore):
+        logger.debug("Iterating posts_by_hour")
         query = "search sourcetype=appnet | bucket span=5m _time | convert mktime(_time) as time | stats count by time"
         job = service.jobs.create(query, exec_mode="blocking", earliest_time="-1d", latest_time="now", max_results=1000000)
-        logger.debug("Iterating posts_by_hour")
         reader = results.ResultsReader(job.results(count=500))
 
         data = [ ]
@@ -230,6 +230,7 @@ def test(service):
             pprint(result)
 
 def main(argv):
+    logger.debug("Splunk->Leftronic Started")
     splunkargs = { "host": c.splunk_host,
                    "port": c.splunk_port,
                    "scheme": c.splunk_scheme,

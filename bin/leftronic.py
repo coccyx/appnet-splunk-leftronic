@@ -58,7 +58,7 @@ def top_talkers(service):
     return (created_job, lambda job: iterate(job))
 
 def top_posts(service):
-    query = 'search sourcetype=appnet reply_to!=" null" | stats count by reply_to | sort 10 -count | rename reply_to AS id | join id [ search earliest=-4h sourcetype=appnet ] | table user.avatar_image.url, user.username, text, count'
+    query = 'search sourcetype=appnet thread_id!=" null" | stats count by thread_id  | sort 10 -count | rename thread_id AS id | join id [ search earliest=-4h sourcetype=appnet ] | table user.avatar_image.url, user.username, text, count'
     created_job = service.jobs.create(query, search_mode="realtime", earliest_time="rt-1h", latest_time="rt")
 
     def iterate(job):
@@ -95,12 +95,28 @@ def posts_today(service):
 
     return (created_job, lambda job: iterate(job))
 
+def unique_users(service):
+    query = "search sourcetype=appnet | stats dc(user.username) as count"
+    created_job = service.jobs.create(query, search_mode="realtime", earliest_time="rt-1d@d", latest_time="rt")
+
+    def iterate(job):
+        logger.debug("Iterating unique_users")
+        reader = results.ResultsReader(job.preview())
+
+        for kind,result in reader:
+            if kind == results.RESULT:
+                point = result['count']
+
+        send_data(stream_name = "unique_users", point = point)
+
+    return (created_job, lambda job: iterate(job))
+
 def posts_by_hour(service):
     def iterate(ignore):
-        query = "search sourcetype=appnet | bucket span=1h _time | convert mktime(_time) as time | stats count by time"
-        job = service.jobs.create(query, exec_mode="oneshot", earliest_time="-1d", latest_time="now")
+        query = "search sourcetype=appnet | bucket span=5m _time | convert mktime(_time) as time | stats count by time"
+        job = service.jobs.create(query, exec_mode="blocking", earliest_time="-1d", latest_time="now", max_results=1000000)
         logger.debug("Iterating posts_by_hour")
-        reader = results.ResultsReader(job)
+        reader = results.ResultsReader(job.results(count=500))
 
         data = [ ]
 
@@ -199,13 +215,13 @@ def top_hashtags(service):
     return (created_job, lambda job: iterate(job))
 
 def test(service):
-    query = "search sourcetype=appnet | stats count"
+    query = "search sourcetype=appnet | bucket span=5m _time | convert mktime(_time) as time | stats count by time"
     # job = service.jobs.create(query, search_mode="realtime", earliest_time="rt-1d", latest_time="rt")
     # 
     # reader = results.ResultsReader(job.preview())
 
-    job = service.jobs.create(query, exec_mode="oneshot", earliest_time="-1m", latest_time="now")
-    reader = results.ResultsReader(job)
+    job = service.jobs.create(query, exec_mode="blocking", earliest_time="-1d", latest_time="now")
+    reader = results.ResultsReader(job.results(count=500))
 
     data = []
 
@@ -229,7 +245,8 @@ def main(argv):
         posts_this_hour,
         posts_per_minute,
         top_mentions,
-        top_hashtags
+        top_hashtags,
+        unique_users
     ]
     hourly_streams = [
         posts_by_hour
@@ -274,8 +291,8 @@ def main(argv):
             for job, iterator in zip(hourly_jobs, hourly_iterators):
                 iterator(job)
 
-            hour = datetime.datetime.now().hour
-            while datetime.datetime.now().hour == hour:
+            minute = datetime.datetime.now().minute - (datetime.datetime.now().minute % 5)
+            while (datetime.datetime.now().minute - (datetime.datetime.now().minute % 5)) == minute:
                 for job, iterator in zip(jobs, iterators):
                     iterator(job)
 

@@ -81,7 +81,7 @@ def top_posts(service):
 
 def posts_today(service):
     query = "search sourcetype=appnet | stats count"
-    created_job = service.jobs.create(query, search_mode="realtime", earliest_time="rt-1d@d", latest_time="rt")
+    created_job = service.jobs.create(query, search_mode="realtime", earliest_time="rt-0d@d", latest_time="rt")
 
     def iterate(job):
         logger.debug("Iterating posts_today")
@@ -114,7 +114,7 @@ def unique_users(service):
 def posts_by_hour(service):
     def iterate(ignore):
         logger.debug("Iterating posts_by_hour")
-        query = "search sourcetype=appnet | bucket span=5m _time | convert mktime(_time) as time | stats count by time"
+        query = "search sourcetype=appnet | bucket span=15m _time | convert mktime(_time) as time | stats count by time"
         job = service.jobs.create(query, exec_mode="blocking", earliest_time="-1d", latest_time="now", max_results=1000000)
         reader = results.ResultsReader(job.results(count=500))
 
@@ -292,8 +292,8 @@ def main(argv):
             for job, iterator in zip(hourly_jobs, hourly_iterators):
                 iterator(job)
 
-            minute = datetime.datetime.now().minute - (datetime.datetime.now().minute % 5)
-            while (datetime.datetime.now().minute - (datetime.datetime.now().minute % 5)) == minute:
+            minute = datetime.datetime.now().minute - (datetime.datetime.now().minute % 15)
+            while (datetime.datetime.now().minute - (datetime.datetime.now().minute % 15)) == minute:
                 for job, iterator in zip(jobs, iterators):
                     iterator(job)
 

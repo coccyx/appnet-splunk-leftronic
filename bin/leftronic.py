@@ -229,7 +229,6 @@ def posts_by_clienttype(service):
                     "name": result['category'],
                     "value": result['percent']
                 })
-                point = result['avgtxtlen']
 
         send_data(stream_name = "posts_by_clienttype", point = {"chart": data})
 
@@ -247,10 +246,7 @@ def avg_msg_length(service):
 
         for kind,result in reader:
             if kind == results.RESULT:
-                data.append({
-                    "name": result['category'],
-                    "value": result['percent']
-                })
+                point = result['avgtxtlen']
 
         send_data(stream_name = "posts_by_clienttype", point = point)
 

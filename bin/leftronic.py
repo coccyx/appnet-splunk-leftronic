@@ -62,7 +62,7 @@ def top_posts(service):
         logger.debug("Iterating top_posts")
         query = 'search sourcetype=appnet thread_id!=" null" | stats count by thread_id  | sort 10 -count | rename thread_id AS id | join id [ search earliest=-4h sourcetype=appnet ] | table user.avatar_image.url, user.username, text, count'
         job = service.jobs.create(query, exec_mode="blocking", earliest_time="-1h", latest_time="now")
-        reader = results.ResultsReader(job)
+        reader = results.ResultsReader(job.results())
         data = []
 
         for kind,result in reader:

@@ -108,7 +108,7 @@ def unique_users(service):
 
         send_data(stream_name = "unique_users", point = point)
 
-    return (created_job, lambda job: iterate(job))
+    return (None, lambda job: iterate(job))
 
 def posts_by_hour(service):
     def iterate(ignore):

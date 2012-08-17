@@ -214,6 +214,27 @@ def top_hashtags(service):
 
     return (created_job, lambda job: iterate(job))
 
+def posts_by_clienttype(service):
+    query = "search sourcetype=appnet | lookup clients name AS source.name | top category"
+    created_job = service.jobs.create(query, search_mode="realtime", earliest_time="rt-1d", latest_time="rt")
+
+    def iterate(job):
+        logger.debug("Iterating posts_by_clienttype")
+        reader = results.ResultsReader(job.preview())
+
+        data = [ ]
+
+        for kind,result in reader:
+            if kind == results.RESULT:
+                data.append({
+                    "name": result['category'],
+                    "value": result['percent']
+                })
+
+        send_data(stream_name = "posts_by_clienttype", point = {"chart": data})
+
+    return (created_job, lambda job: iterate(job))
+
 def test(service):
     query = "search sourcetype=appnet | bucket span=5m _time | convert mktime(_time) as time | stats count by time"
     # job = service.jobs.create(query, search_mode="realtime", earliest_time="rt-1d", latest_time="rt")
@@ -247,7 +268,8 @@ def main(argv):
         posts_per_minute,
         top_mentions,
         top_hashtags,
-        unique_users
+        unique_users,
+        posts_by_clienttype
     ]
     hourly_streams = [
         posts_by_hour

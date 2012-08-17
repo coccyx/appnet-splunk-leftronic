@@ -76,7 +76,7 @@ def top_posts(service):
         send_data(stream_name = "top_posts", command = "clear")
         send_data(stream_name = "top_posts", point = data )
 
-    return (created_job, lambda job: iterate(job))
+    return (None, lambda job: iterate(job))
 
 def posts_today(service):
     query = "search sourcetype=appnet | stats count"
@@ -108,7 +108,7 @@ def unique_users(service):
 
         send_data(stream_name = "unique_users", point = point)
 
-    return (None, lambda job: iterate(job))
+    return (job, lambda job: iterate(job))
 
 def posts_by_hour(service):
     def iterate(ignore):

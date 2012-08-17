@@ -225,6 +225,24 @@ def posts_by_clienttype(service):
 
         for kind,result in reader:
             if kind == results.RESULT:
+                point = result['avgtxtlen']
+
+        send_data(stream_name = "posts_by_clienttype", point = point)
+
+    return (created_job, lambda job: iterate(job))
+
+def avg_msg_length(service):
+    query = "search sourcetype=appnet | eval txtlen=len(text) | stats avg(txtlen)"
+    created_job = service.jobs.create(query, search_mode="realtime", earliest_time="rt-1d", latest_time="rt")
+
+    def iterate(job):
+        logger.debug("Iterating avg_msg_length")
+        reader = results.ResultsReader(job.preview())
+
+        data = [ ]
+
+        for kind,result in reader:
+            if kind == results.RESULT:
                 data.append({
                     "name": result['category'],
                     "value": result['percent']
@@ -268,7 +286,8 @@ def main(argv):
         top_mentions,
         top_hashtags,
         unique_users,
-        posts_by_clienttype
+        posts_by_clienttype,
+        avg_msg_length
     ]
     hourly_streams = [
         posts_by_hour

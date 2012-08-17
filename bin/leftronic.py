@@ -248,7 +248,7 @@ def avg_msg_length(service):
             if kind == results.RESULT:
                 point = result['avgtxtlen']
 
-        send_data(stream_name = "posts_by_clienttype", point = point)
+        send_data(stream_name = "avg_msg_length", point = point)
 
     return (created_job, lambda job: iterate(job))
 

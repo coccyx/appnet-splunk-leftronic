@@ -232,7 +232,7 @@ def posts_by_clienttype(service):
     return (created_job, lambda job: iterate(job))
 
 def avg_msg_length(service):
-    query = "search sourcetype=appnet | eval txtlen=len(text) | stats avg(txtlen)"
+    query = "search sourcetype=appnet | eval txtlen=len(text) | stats avg(txtlen) as avgtxtlen"
     created_job = service.jobs.create(query, search_mode="realtime", earliest_time="rt-1d", latest_time="rt")
 
     def iterate(job):
@@ -282,7 +282,7 @@ def main(argv):
         posts_today,
         top_posts,
         posts_this_hour,
-        posts_per_minute,
+        #posts_per_minute,
         top_mentions,
         top_hashtags,
         unique_users,

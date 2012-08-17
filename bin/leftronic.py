@@ -58,12 +58,11 @@ def top_talkers(service):
     return (created_job, lambda job: iterate(job))
 
 def top_posts(service):
-    query = 'search sourcetype=appnet thread_id!=" null" | stats count by thread_id  | sort 10 -count | rename thread_id AS id | join id [ search earliest=-4h sourcetype=appnet ] | table user.avatar_image.url, user.username, text, count'
-    created_job = service.jobs.create(query, search_mode="realtime", earliest_time="rt-1h", latest_time="rt")
-
     def iterate(job):
         logger.debug("Iterating top_talkers")
-        reader = results.ResultsReader(job.preview())
+        query = 'search sourcetype=appnet thread_id!=" null" | stats count by thread_id  | sort 10 -count | rename thread_id AS id | join id [ search earliest=-4h sourcetype=appnet ] | table user.avatar_image.url, user.username, text, count'
+        job = service.jobs.create(query, exec_mode="blocking", earliest_time="1h", latest_time="now")
+        reader = results.ResultsReader(job)
         data = []
 
         for kind,result in reader:

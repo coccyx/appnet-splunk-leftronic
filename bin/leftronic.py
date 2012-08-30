@@ -11,6 +11,8 @@ import time, datetime
 import splunklib.client as client
 import splunklib.results as results
 
+import textwrap
+
 from pprint import pprint
 
 c = Config()
@@ -60,21 +62,58 @@ def top_talkers(service):
 def top_posts(service):
     def iterate(job):
         logger.debug("Iterating top_posts")
-        query = 'search sourcetype=appnet thread_id!=" null" | stats count by thread_id  | sort 10 -count | rename thread_id AS id | join id [ search earliest=-4h sourcetype=appnet ] | table user.avatar_image.url, user.username, text, count'
+        query = 'search sourcetype=appnet thread_id!=" null" | stats count by thread_id  | sort 10 -count | rename thread_id AS id | join id [ search earliest=-4h sourcetype=appnet ] | table user.avatar_image.url, user.username, id, text, count'
         job = service.jobs.create(query, exec_mode="blocking", earliest_time="-1h", latest_time="now")
         reader = results.ResultsReader(job.results())
         data = []
 
+        html = """<style type=text/css">
+                    A:link {text-decoration: none; color: #AAA}
+                    A:visited {text-decoration: none; color: #AAA}
+                    A:active {text-decoration: none; color: #AAA}
+                    A:hover {text-decoration: underline; color: #AAA}
+               </style>"""
+        temphtml = ""
+
+        firsttime = True
         for kind,result in reader:
             if kind == results.RESULT:
-                data.append({
-                    "imgUrl": result["user.avatar_image.url"],
-                    "title": result["user.username"],
-                    "msg": result["text"]
-                })
+                temphtml += '<a target="_blank" href="http://alpha.app.net/%s/post/%s">' % (result["user.username"], result["id"])
+                if firsttime:
+                    temphtml += """<div class="textFeedContainer" style="margin-top: 46px; width: 398.4px; 
+                            margin-left: 16.799999999999997px; margin-right: 16.799999999999997px; 
+                            opacity: 1; height: 31.81666660308838px; padding-bottom: 8.399999999999999px; 
+                            border-top-width: 1px;">"""
+                    firsttime = False
+                else:
+                    temphtml += """<div class="textFeedContainer" style="margin-top: 0px; width: 398.4px; 
+                            margin-left: 16.799999999999997px; margin-right: 16.799999999999997px; 
+                            opacity: 1; height: 47.81666660308838px; padding-bottom: 8.399999999999999px; 
+                            border-top-width: 1px;">"""
+
+                temphtml += """<img src="%s" style="position: absolute; top: 4.199999999999999px; z-index: 350; 
+                            width: 28.799999999999997px;" />
+                            <div class="textFeedItem" style="position: relative; top: 0px; z-index: 350; 
+                            font-size: 13.440000000000001px; line-height: 16.128px; width: 365.4px; 
+                            left: 33px; padding-top: 4.199999999999999px;">
+                            <span class="textFeedTitle" style="margin-right: 6.720000000000001px;">%s</span>
+                            <span class="textFeedBody">%s</span>
+                            </div>
+                            </div>""" % (result["user.avatar_image.url"], result["user.username"], \
+                                            result["text"])
+                temphtml += "</a>"
+                html += textwrap.dedent(temphtml)
+                temphtml = ""
+
+        html += """<div class="widgetTitle" style="width: 398.4px; left: 16.799999999999997px;
+                'font-size: 16.799999999999997px; line-height: 48px;">Top Posts (Last 1H)</div>
+
+                <div class="widgetBackground" style="border-top-left-radius: 5px; border-top-right-radius: 5px;
+                 border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; top: 3px; left: 3px; 
+                 width: 426px; height: 378px; opacity: 0;"></div>"""
 
         send_data(stream_name = "top_posts", command = "clear")
-        send_data(stream_name = "top_posts", point = data )
+        send_data(stream_name = "top_posts", point = {"html": html} )
 
     return (None, lambda job: iterate(job))
 

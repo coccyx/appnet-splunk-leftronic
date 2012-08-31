@@ -253,7 +253,7 @@ def top_hashtags(service):
     return (created_job, lambda job: iterate(job))
 
 def posts_by_clienttype(service):
-    query = "search sourcetype=appnet | lookup clients name AS source.name | top category"
+    query = 'search sourcetype=appnet | lookup clients name AS source.name | fillnull value="Unknown" category | top category'
     created_job = service.jobs.create(query, search_mode="realtime", earliest_time="rt-1d", latest_time="rt")
 
     def iterate(job):

@@ -57,7 +57,7 @@ def top_talkers(service):
                     })
 
             send_data(stream_name = "top_talkers", point = { "leaderboard": data })
-        except KeyError e:
+        except KeyError, e:
             logger.debug("Received KeyError %s in top_talkers" % e)
 
     return (created_job, lambda job: iterate(job))
@@ -118,7 +118,7 @@ def top_posts(service):
 
             send_data(stream_name = "top_posts", command = "clear")
             send_data(stream_name = "top_posts", point = {"html": html} )
-        except KeyError e:
+        except KeyError, e:
             logger.debug("Received KeyError %s in top_posts" % e)
 
     return (None, lambda job: iterate(job))
@@ -137,7 +137,7 @@ def posts_today(service):
                     point = result['count']
 
             send_data(stream_name = "posts_today", point = point)
-        except KeyError e:
+        except KeyError, e:
             logger.debug("Received KeyError %s in posts_today" % e)
 
     return (created_job, lambda job: iterate(job))
@@ -156,7 +156,7 @@ def unique_users(service):
                     point = result['count']
 
             send_data(stream_name = "unique_users", point = point)
-        except KeyError e:
+        except KeyError, e:
             logger.debug("Received KeyError %s in unique_users" % e)
 
     return (created_job, lambda job: iterate(job))
@@ -180,7 +180,7 @@ def posts_by_hour(service):
 
             send_data(stream_name = "posts_by_hour", command = "clear")
             send_data(stream_name = "posts_by_hour", point = data)
-        except KeyError e:
+        except KeyError, e:
             logger.debug("Received KeyError %s in posts_by_hour" % e)
 
     return (None, lambda job: iterate(job))
@@ -205,7 +205,7 @@ def posts_this_hour(service):
                     globals()['pth_id'] = long(result["id"])
 
             send_data(stream_name = "posts_this_hour", point = count)
-        except KeyError e:
+        except KeyError, e:
             logger.debug("Received KeyError %s in posts_this_hour" % e)
 
     return (created_job, lambda job: iterate(job))
@@ -226,7 +226,7 @@ def posts_per_minute(service):
                     count = long(result["count"])
 
             send_data(stream_name = "posts_per_minute", point = count)
-        except KeyError e:
+        except KeyError, e:
             logger.debug("Received KeyError %s in posts_per_minute" % e)
 
     return (None, lambda job: iterate(job))
@@ -250,7 +250,7 @@ def top_mentions(service):
                     })
 
             send_data(stream_name = "top_mentions", point = { "leaderboard": data })
-        except KeyError e:
+        except KeyError, e:
             logger.debug("Received KeyError %s in top_mentions" % e)
 
     return (created_job, lambda job: iterate(job))
@@ -274,7 +274,7 @@ def top_hashtags(service):
                     })
 
             send_data(stream_name = "top_hashtags", point = {"leaderboard": data})
-        except KeyError e:
+        except KeyError, e:
             logger.debug("Received KeyError %s in top_hashtags" % e)
 
     return (created_job, lambda job: iterate(job))
@@ -298,7 +298,7 @@ def posts_by_clienttype(service):
                     })
 
             send_data(stream_name = "posts_by_clienttype", point = {"chart": data})
-        except KeyError e:
+        except KeyError, e:
             logger.debug("Received KeyError %s in posts_by_clienttype" % e)
 
     return (created_job, lambda job: iterate(job))
@@ -319,7 +319,7 @@ def avg_msg_length(service):
                     point = result['avgtxtlen']
 
             send_data(stream_name = "avg_msg_length", point = point)
-        except KeyError e:
+        except KeyError, e:
             logger.debug("Received KeyError %s in avg_msg_length" % e)
 
     return (created_job, lambda job: iterate(job))
@@ -344,7 +344,7 @@ def posts_by_client(service):
                     })
 
             send_data(stream_name = "posts_by_client", point = {"chart": data})
-        except KeyError e:
+        except KeyError, e:
             logger.debug("Received KeyError %s in posts_by_clienttype" % e)
 
     return (created_job, lambda job: iterate(job))
@@ -368,7 +368,7 @@ def posts_by_day(service):
 
             send_data(stream_name = "posts_by_day", command = "clear")
             send_data(stream_name = "posts_by_day", point = data)
-        except KeyError e:
+        except KeyError, e:
             logger.debug("Received KeyError %s in posts_by_day" % e)
 
     return (None, lambda job: iterate(job))
@@ -438,7 +438,7 @@ def top_reposts(service):
 
             send_data(stream_name = "top_reposts", command = "clear")
             send_data(stream_name = "top_reposts", point = {"html": html} )
-        except KeyError e:
+        except KeyError, e:
             logger.debug("Received KeyError %s in top_reposts" % e)
 
     return (None, lambda job: iterate(job))
